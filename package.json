@@ -2,9 +2,10 @@
   "name": "js-starter",
   "version": "1.0.0",
   "description": "this is area is for description",
-  "main": "src/index.js",
+  "main": "src/index.mjs",
+  "type": "module",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.mjs"
   },
   "author": "",
   "license": "ISC",
