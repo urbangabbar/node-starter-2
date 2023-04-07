@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const Joi = require("joi");
 
 const app = express();
 
@@ -35,8 +36,21 @@ app.get("/api/hotel/:hotelId", (req, res) => {
   }
 });
 
+const postHotelSchema = Joi.object({
+  name: Joi.string().min(5).max(30).required(),
+  id: Joi.number().integer().min(1),
+  price: Joi.number().integer().min(100).max(1000),
+});
+
+// this is an example of api level middleware
 app.post("/api/hotel", (req, res) => {
   const hotel = req.body;
+  const { error } = postHotelSchema.validate(hotel);
+  if (error) {
+    return res.status(400).send({
+      msg: error.message,
+    });
+  }
   hotels.push(hotel);
   return res.status(201).send({
     msg: "succes hotel created",
