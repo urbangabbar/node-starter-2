@@ -1,8 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const Joi = require("joi");
+const mongoose = require("mongoose");
+const { Hotel } = require("./hotel.mode");
 
 const app = express();
+const connectionPromise = mongoose.connect(
+  "mongodb+srv://chan:ZTVHK5W02XOhWU9r@cluster0.ubvlpgm.mongodb.net/?retryWrites=true&w=majority"
+);
 
 //express has a concept of middleware
 app.use(bodyParser.json());
@@ -38,12 +43,12 @@ app.get("/api/hotel/:hotelId", (req, res) => {
 
 const postHotelSchema = Joi.object({
   name: Joi.string().min(5).max(30).required(),
-  id: Joi.number().integer().min(1),
-  price: Joi.number().integer().min(100).max(1000),
+  avgRating: Joi.number().min(0).max(10),
+  price: Joi.number().integer().min(100).max(1000)
 });
 
 // this is an example of api level middleware
-app.post("/api/hotel", (req, res) => {
+app.post("/api/hotel",async (req, res) => {
   const hotel = req.body;
   const { error } = postHotelSchema.validate(hotel);
   if (error) {
@@ -51,9 +56,12 @@ app.post("/api/hotel", (req, res) => {
       msg: error.message,
     });
   }
-  hotels.push(hotel);
+  const newHotel = new Hotel({...hotel});
+  const response = await newHotel.save();
+
   return res.status(201).send({
     msg: "succes hotel created",
+    data: response.toJSON()
   });
 });
 
@@ -87,6 +95,12 @@ app.put("/api/hotel/:hotelId", (req, res) => {
   return res.status(200).send(hotels[hotelIndex]);
 });
 
-app.listen(3000, () => {
-  console.log("Server has started on port 3000");
-});
+connectionPromise
+  .then(() => {
+    app.listen(3000, () => {
+      console.log("Server has started on port 3000");
+    });
+  })
+  .catch((err) => {
+    console.error("Error connecting to DB", err);
+  });
