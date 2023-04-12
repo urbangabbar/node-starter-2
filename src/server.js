@@ -2,7 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const Joi = require("joi");
 const mongoose = require("mongoose");
-const { Hotel } = require("./hotel.mode");
+const { Hotel } = require("./hotel.model");
 
 const app = express();
 const connectionPromise = mongoose.connect(
@@ -12,26 +12,16 @@ const connectionPromise = mongoose.connect(
 //express has a concept of middleware
 app.use(bodyParser.json());
 
-const hotels = [
-  {
-    name: "abhinav hotel 2",
-    id: "2",
-    price: 1000,
-  },
-  {
-    name: "abhinav hotel",
-    id: "1",
-    price: 1000,
-  },
-];
-
-app.get("/api/hotel", (req, res) => {
+app.get("/api/hotel",async (req, res) => {
+  // when using finc in mongodb you can pass query in object 
+  //..if you want to get all datat just pass and empty object
+  const hotels = await Hotel.find({})
   return res.send(hotels);
 });
 
-app.get("/api/hotel/:hotelId", (req, res) => {
+app.get("/api/hotel/:hotelId", async (req, res) => {
   const { hotelId } = req.params;
-  const hotel = hotels.find((el) => el.id === hotelId);
+  const hotel = await Hotel.findOne({ _id: hotelId });
   if (hotel) {
     return res.send(hotel);
   } else {
@@ -56,7 +46,7 @@ app.post("/api/hotel",async (req, res) => {
       msg: error.message,
     });
   }
-  const newHotel = new Hotel({...hotel});
+  const newHotel = new Hotel(hotel);
   const response = await newHotel.save();
 
   return res.status(201).send({
@@ -65,35 +55,34 @@ app.post("/api/hotel",async (req, res) => {
   });
 });
 
-app.delete("/api/hotel/:hotelId", (req, res) => {
+app.delete("/api/hotel/:hotelId",async (req, res) => {
   const { hotelId } = req.params;
-  const hotelIndex = hotels.findIndex((hotel) => hotel.id === hotelId);
-  if (hotelIndex === -1) {
+  const hotel = await Hotel.findOneAndDelete({_id: hotelId});
+  if (!hotel) {
     return res
       .status(404)
       .send({ error: "Hotel not found. please try with a valid ID" });
   }
-  hotels.splice(hotelIndex, 1);
   return res.status(200).send({ msg: "Hotel removed successfully" });
 });
 
-app.put("/api/hotel/:hotelId", (req, res) => {
-  const { hotelId } = req.params;
-  const hotel = req.body;
+// app.put("/api/hotel/:hotelId", (req, res) => {
+//   const { hotelId } = req.params;
+//   const hotel = req.body;
 
-  const hotelIndex = hotels.findIndex((hotel) => hotel.id === hotelId);
-  if (hotelIndex === -1) {
-    return res
-      .status(404)
-      .send({ error: "Hotel not found. please try with a valid ID" });
-  }
-  hotels[hotelIndex] = {
-    name: hotel.name,
-    price: hotel.price,
-    id: hotelId,
-  };
-  return res.status(200).send(hotels[hotelIndex]);
-});
+//   const hotelIndex = hotels.findIndex((hotel) => hotel.id === hotelId);
+//   if (hotelIndex === -1) {
+//     return res
+//       .status(404)
+//       .send({ error: "Hotel not found. please try with a valid ID" });
+//   }
+//   hotels[hotelIndex] = {
+//     name: hotel.name,
+//     price: hotel.price,
+//     id: hotelId,
+//   };
+//   return res.status(200).send(hotels[hotelIndex]);
+// });
 
 connectionPromise
   .then(() => {
