@@ -83,10 +83,11 @@ app.put("/api/hotel/:hotelId", async (req, res) => {
   const { name, price } = req.body;
 
   const response = await Hotel.findOneAndUpdate(
-    { _id: hotelId },
-    { name, price },
-    { new: true }
+    { _id: hotelId }, //filter
+    { name: name, price: price }, // field to update
+    { new: true } // hume updated document chahiye
   );
+
   if (!response) {
     return res
       .status(404)
