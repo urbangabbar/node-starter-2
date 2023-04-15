@@ -1,3 +1,4 @@
+require('localenv');
 const express = require("express");
 // express import server side web applcation framework
 const bodyParser = require("body-parser");
@@ -12,9 +13,7 @@ const { Hotel } = require("./hotel.model");
 const app = express();
 // we are intializing a new express app
 
-const connectionPromise = mongoose.connect(
-  "mongodb+srv://chan:ZTVHK5W02XOhWU9r@cluster0.ubvlpgm.mongodb.net/?retryWrites=true&w=majority"
-);
+const connectionPromise = mongoose.connect(process.env.DB_URL);
 // we are making connection to mongodb
 
 //express has a concept of middleware
@@ -101,7 +100,7 @@ app.put("/api/hotel/:hotelId", async (req, res) => {
 
 connectionPromise
   .then(() => {
-    app.listen(3000, () => {
+    app.listen(process.env.PORT, () => {
       console.log("Server has started on port 3000");
     });
   })
