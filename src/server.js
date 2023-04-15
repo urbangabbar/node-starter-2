@@ -101,7 +101,7 @@ app.put("/api/hotel/:hotelId", async (req, res) => {
 connectionPromise
   .then(() => {
     app.listen(process.env.PORT, () => {
-      console.log("Server has started on port 3000");
+      console.log("Server has started on port"+ process.env.PORT);
     });
   })
   .catch((err) => {
